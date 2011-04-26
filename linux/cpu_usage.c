@@ -77,25 +77,65 @@ cpu_t* cpu_time_refresh(cpu_t* _ct)
 
 int main(int argc, char** argv)
 {
+	TIME_t tz;
+
 	cpu_t* cpu = (cpu_t*) malloc(sizeof(cpu_t));
 	if (cpu == NULL) {
 		fprintf(stderr, "failed to allocate memory for cpu_t");
 		exit(EXIT_FAILURE);
 	}
 
-	cpu = cpu_time_refresh(cpu);
+	cpu_t* next_cpu = (cpu_t*) malloc(sizeof(cpu_t));
+	if (next_cpu == NULL) {
+		fprintf(stderr, "failed to allocate memory for cpu_t");
+		exit(EXIT_FAILURE);
+	}
 
-	printf("time: %Ld %Ld %Ld %Ld %Ld %Ld %Ld %Ld\n", 
-		cpu->usr, 
-		cpu->nice, 
-		cpu->sys, 
-		cpu->idle, 
-		cpu->iowait, 
-		cpu->irq, 
-		cpu->softirq, 
-		cpu->stead, 
-		cpu->guest);
+	char c = 0;
+	cpu = cpu_time_refresh(cpu);
+	while(1) {
+		sleep(1);
+		next_cpu = cpu_time_refresh(next_cpu);
+		TIME_t diff_usr = next_cpu->usr - cpu->usr;
+		TIME_t diff_nice = next_cpu->nice - cpu->nice;
+		TIME_t diff_sys = next_cpu->sys - cpu->sys;
+		TIME_t diff_idle = TRIMz(next_cpu->idle - cpu->idle);
+		TIME_t diff_iowait = next_cpu->iowait - cpu->iowait;
+		TIME_t diff_irq = next_cpu->irq - cpu->irq;
+		TIME_t diff_sirq = next_cpu->softirq - cpu->softirq;
+		TIME_t diff_stead = next_cpu->stead - cpu->stead;
+		TIME_t diff_guest = next_cpu->guest - cpu->guest;
+
+		int total_diff = 
+					diff_usr +
+					diff_nice +
+					diff_sys +
+					iff_idle + 
+					diff_iowait +
+					diff_irq +
+					diff_sirq +
+					diff_stead +
+					diff_guest;
+
+		//float usage = (100.0f * (next_cpu->idle - cpu->idle)) / total_diff;
+		float usage = (100.0f 
+					* ((next_cpu->usr + next_cpu->sys + next_cpu->nice) 
+					- (cpu->usr + cpu->sys + cpu->nice))) 
+					/ total_diff;
+		printf("CPU Usage: %f %\n", usage);
+
+		cpu->usr = next_cpu->usr;
+		cpu->nice = next_cpu->nice;
+		cpu->sys = next_cpu->sys;
+		cpu->idle = next_cpu->idle;
+		cpu->iowait = next_cpu->iowait;
+		cpu->irq = next_cpu->irq;
+		cpu->softirq = next_cpu->softirq;
+		cpu->stead = next_cpu->stead;
+		cpu->guest = next_cpu->guest;
+	}
 
 	free(cpu);
+	free(next_cpu);
 }
 

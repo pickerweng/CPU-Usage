@@ -32,6 +32,8 @@
 
 typedef unsigned long long TIME_t;
 
+#define TRIMz(x)  ((tz = (TIME_t)(x)) < 0 ? 0 : tz)
+
 typedef struct _cpu {
 	int id;
 	TIME_t usr, nice, sys, idle, iowait, irq, softirq, stead, guest;
