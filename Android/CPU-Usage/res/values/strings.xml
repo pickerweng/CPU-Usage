@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">CPU Usage Monitor.</string>
+    <string name="app_name">CpuUsage</string>
+    <string name="cpuUsageText">CPU Usage: </string>
+</resources>
